@@ -3,22 +3,70 @@
 <head>
   <title>Opening Skedulo...</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      background: #ffc20e;
+      font-family: "Segoe UI", sans-serif;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+    }
+    .btn {
+      display: inline-block;
+      background: #6b2a6b;
+      color: #fff;
+      font-size: 20px;
+      font-weight: bold;
+      padding: 18px 36px;
+      border-radius: 12px;
+      text-decoration: none;
+      text-align: center;
+    }
+    p { color: #6b2a6b; font-size: 15px; }
+  </style>
 </head>
-<body style="margin:0;background:#ffc20e;">
-
-  <a id="deeplink" href="skedulox://agenda" style="display:none;">Open</a>
-
+<body>
   <script>
     var ua = navigator.userAgent;
+
     if (/android/i.test(ua)) {
-      window.location.href = "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end";
+      // Android: intent URL works on click/navigation — redirect immediately
+      window.location.replace(
+        "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end"
+      );
     } else if (/iPad|iPhone|iPod/.test(ua)) {
-      document.getElementById('deeplink').style.display = 'block';
-      document.getElementById('deeplink').style.cssText = 
-        'position:fixed;top:0;left:0;width:100%;height:100%;background:#ffc20e;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:22px;font-weight:bold;color:#6b2a6b;text-decoration:none;';
-      document.getElementById('deeplink').innerText = 'Tap to Open Skedulo';
+      // iOS: must use an <a> tag tap — auto-click it
+      document.addEventListener("DOMContentLoaded", function () {
+        var link = document.getElementById("iosLink");
+        link.click(); // works because the original navigation counts as user gesture
+      });
+    } else {
+      // Desktop fallback
+      window.location.replace("skedulox://agenda");
     }
   </script>
 
+  <!-- iOS fallback link (auto-clicked above) -->
+  <a id="iosLink" href="skedulox://agenda" style="display:none;">open</a>
+
+  <!-- Visual fallback if app doesn't open -->
+  <a class="btn" href="skedulox://agenda" id="manualBtn" style="display:none;">
+    Tap to Open Skedulo
+  </a>
+  <p id="msg" style="display:none;">If the app didn't open, tap the button above.</p>
+
+  <script>
+    // Show manual button after 1.5s as fallback
+    setTimeout(function () {
+      var btn = document.getElementById("manualBtn");
+      var msg = document.getElementById("msg");
+      if (btn) btn.style.display = "inline-block";
+      if (msg) msg.style.display = "block";
+    }, 1500);
+  </script>
 </body>
 </html>
