@@ -120,8 +120,8 @@
     </svg>
   </div>
 
-  <h1 id="mainTitle">Opening Skedulo…</h1>
-  <p class="sub" id="mainSub">Taking you to the Skedulo app.</p>
+  <h1 id="mainTitle">Opening Leave Management…</h1>
+  <p class="sub" id="mainSub">Taking you to Leave Management in Skedulo.</p>
 
   <!-- Teams detected: show instructions -->
   <div class="teams-warning" id="teamsBox">
@@ -136,14 +136,14 @@
     </div>
     <div class="step">
       <div class="step-num">3</div>
-      <div>Tap <strong>"Open Skedulo"</strong> on that page — the app will launch</div>
+      <div>Tap <strong>"Open Leave Management"</strong> on that page — the app will launch</div>
     </div>
     <div class="step">
       <div class="step-num" style="font-size:11px">OR</div>
       <div>
         Copy this link and paste it in Chrome/Safari:
         <div class="copy-row">
-          <div class="copy-url" id="copyUrl">skedulox://agenda</div>
+          <div class="copy-url" id="copyUrl">skedulox://mex/leave_management</div>
           <button class="copy-btn" id="copyBtn" onclick="copyLink()">Copy</button>
         </div>
       </div>
@@ -151,12 +151,12 @@
   </div>
 
   <!-- Normal open button -->
-  <a class="btn" id="openBtn" href="skedulox://agenda">Open Skedulo</a>
+  <a class="btn" id="openBtn" href="skedulox://mex/leave_management">Open Leave Management</a>
 
   <p class="note" id="noteText"></p>
 
   <script>
-    var SKEDULO_SCHEME = "skedulox://agenda";
+    var SKEDULO_SCHEME = "skedulox://mex/leave_management";
     var ua = navigator.userAgent;
     var isTeams = /Teams/.test(ua) || /TeamsMobile/.test(ua) || /SkypeTeams/.test(ua);
     // Teams WebView also shows up as just a generic WebView without "Teams" in UA sometimes
