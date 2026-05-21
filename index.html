@@ -25,7 +25,7 @@
     }
     .logo svg { width: 40px; height: 40px; fill: #ffc20e; }
     h1 { font-size: 22px; font-weight: 700; color: #6b2a6b; margin-bottom: 10px; }
-    p  { font-size: 15px; color: #5a2060; margin-bottom: 32px; }
+    p.sub { font-size: 15px; color: #5a2060; margin-bottom: 32px; }
 
     .btn {
       display: inline-block;
@@ -36,106 +36,195 @@
       padding: 16px 36px;
       border-radius: 12px;
       text-decoration: none;
-      letter-spacing: 0.3px;
       box-shadow: 0 4px 14px rgba(107,42,107,0.25);
-      transition: background 0.2s, transform 0.1s;
       cursor: pointer;
       border: none;
+      width: 100%;
+      max-width: 320px;
+      margin-bottom: 14px;
     }
-    .btn:active { transform: scale(0.97); }
 
-    .note {
-      margin-top: 28px;
-      font-size: 13px;
-      color: #7a4a00;
-      max-width: 300px;
+    /* Teams warning box */
+    .teams-warning {
+      display: none;
+      background: #fff;
+      border-radius: 14px;
+      padding: 20px;
+      max-width: 340px;
+      text-align: left;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+      margin-bottom: 20px;
+    }
+    .teams-warning h2 {
+      font-size: 16px;
+      color: #6b2a6b;
+      margin-bottom: 10px;
+    }
+    .step {
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+      margin-bottom: 12px;
+      font-size: 14px;
+      color: #333;
       line-height: 1.5;
     }
+    .step-num {
+      background: #6b2a6b;
+      color: #ffc20e;
+      font-weight: 700;
+      border-radius: 50%;
+      width: 26px; height: 26px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+    }
+    .copy-row {
+      display: flex;
+      gap: 8px;
+      margin-top: 4px;
+    }
+    .copy-url {
+      flex: 1;
+      font-size: 12px;
+      background: #f3eef7;
+      border: 1px solid #c9a8d4;
+      border-radius: 8px;
+      padding: 8px 10px;
+      color: #444;
+      word-break: break-all;
+    }
+    .copy-btn {
+      background: #6b2a6b;
+      color: #ffc20e;
+      border: none;
+      border-radius: 8px;
+      padding: 8px 14px;
+      font-weight: 700;
+      font-size: 13px;
+      cursor: pointer;
+      flex-shrink: 0;
+    }
+    .copied { background: #2a8a2a !important; }
+    .note { font-size: 13px; color: #7a4a00; margin-top: 10px; line-height: 1.5; }
+
+    /* Icon for top-right Teams button visual hint */
+    .arrow-icon { font-size: 20px; display: inline-block; border: 2px solid #6b2a6b; border-radius: 6px; padding: 0 5px; }
   </style>
 </head>
 <body>
+
   <div class="logo">
-    <!-- Calendar/schedule icon -->
     <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
       <path d="M19 4h-1V2h-2v2H8V2H6v2H5C3.9 4 3 4.9 3 6v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 16H5V10h14v10zm0-12H5V6h14v2zm-7 5h5v5h-5z"/>
     </svg>
   </div>
 
-  <h1>Opening Skedulo…</h1>
-  <p>Tap the button below to open the Skedulo app.</p>
+  <h1 id="mainTitle">Opening Skedulo…</h1>
+  <p class="sub" id="mainSub">Taking you to the Skedulo app.</p>
 
+  <!-- Teams detected: show instructions -->
+  <div class="teams-warning" id="teamsBox">
+    <h2>⚠️ Teams browser detected</h2>
+    <div class="step">
+      <div class="step-num">1</div>
+      <div>Tap the <span class="arrow-icon">↗</span> icon at the <strong>top right</strong> of this screen</div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div>This page will open in <strong>Chrome</strong> or <strong>Safari</strong></div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div>Tap <strong>"Open Skedulo"</strong> on that page — the app will launch</div>
+    </div>
+    <div class="step">
+      <div class="step-num" style="font-size:11px">OR</div>
+      <div>
+        Copy this link and paste it in Chrome/Safari:
+        <div class="copy-row">
+          <div class="copy-url" id="copyUrl">skedulox://agenda</div>
+          <button class="copy-btn" id="copyBtn" onclick="copyLink()">Copy</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Normal open button -->
   <a class="btn" id="openBtn" href="skedulox://agenda">Open Skedulo</a>
 
   <p class="note" id="noteText"></p>
 
   <script>
-    (function () {
-      var ua = navigator.userAgent;
-      var isAndroid = /android/i.test(ua);
-      var isIOS = /iPad|iPhone|iPod/.test(ua);
-      var btn = document.getElementById('openBtn');
-      var note = document.getElementById('noteText');
+    var SKEDULO_SCHEME = "skedulox://agenda";
+    var ua = navigator.userAgent;
+    var isTeams = /Teams/.test(ua) || /TeamsMobile/.test(ua) || /SkypeTeams/.test(ua);
+    // Teams WebView also shows up as just a generic WebView without "Teams" in UA sometimes
+    // Additional heuristic: no window.chrome and not Safari standalone
+    var isAndroid = /android/i.test(ua);
+    var isIOS = /iPad|iPhone|iPod/.test(ua);
 
-      if (isAndroid) {
-        // Intent URI works in Chrome and most Android browsers.
-        // Teams WebView on Android strips intents, so we try the custom
-        // scheme first and fall back gracefully.
-        btn.href = "skedulox://agenda";
+    if (isTeams) {
+      // Show the step-by-step Teams escape instructions
+      document.getElementById('teamsBox').style.display = 'block';
+      document.getElementById('mainTitle').textContent = 'One more step needed';
+      document.getElementById('mainSub').textContent =
+        'Teams blocks app links. Follow these steps to open Skedulo:';
+      document.getElementById('openBtn').style.display = 'none';
 
-        btn.addEventListener('click', function (e) {
-          e.preventDefault();
+    } else if (isAndroid) {
+      document.getElementById('openBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        // Try iframe trick first (avoids navigation error)
+        var iframe = document.createElement('iframe');
+        iframe.style.display = 'none';
+        iframe.src = SKEDULO_SCHEME;
+        document.body.appendChild(iframe);
 
-          // Try custom scheme
-          var start = Date.now();
-          var fallbackTimer;
+        // Fallback to intent URI after short delay
+        setTimeout(function() {
+          window.location.href =
+            "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end";
+        }, 1000);
+      });
+      document.getElementById('noteText').textContent =
+        "Make sure Skedulo is installed on your device.";
 
-          // Hidden iframe trick — avoids navigation errors on failed schemes
-          var iframe = document.createElement('iframe');
-          iframe.style.display = 'none';
-          iframe.src = "skedulox://agenda";
-          document.body.appendChild(iframe);
+    } else if (isIOS) {
+      document.getElementById('openBtn').addEventListener('click', function(e) {
+        e.preventDefault();
+        window.location.href = SKEDULO_SCHEME;
+        setTimeout(function() {
+          document.getElementById('noteText').innerHTML =
+            "App didn't open? <a href='https://apps.apple.com/app/skedulo/id1097672372' style='color:#6b2a6b;font-weight:700;'>Download from the App Store</a>.";
+        }, 2500);
+      });
 
-          fallbackTimer = setTimeout(function () {
-            if (Date.now() - start < 2000) {
-              // App didn't open — try intent URI in new context
-              window.location.href =
-                "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end";
-            }
-          }, 1200);
+    } else {
+      document.getElementById('noteText').textContent =
+        "On desktop, make sure Skedulo is installed.";
+    }
 
-          // If page hides (app opened), cancel fallback
-          document.addEventListener('visibilitychange', function () {
-            if (document.hidden) clearTimeout(fallbackTimer);
-          });
-        });
-
-        note.textContent =
-          "If Skedulo doesn't open, tap the ↗ icon at the top right to open this page in your browser, then tap the button.";
-
-      } else if (isIOS) {
-        btn.href = "skedulox://agenda";
-
-        btn.addEventListener('click', function (e) {
-          e.preventDefault();
-          window.location.href = "skedulox://agenda";
-
-          // iOS: if app not installed or Teams blocks it, show store link after delay
-          setTimeout(function () {
-            note.innerHTML =
-              "App didn't open? <a href='https://apps.apple.com/app/skedulo/id1097672372' " +
-              "style='color:#6b2a6b;font-weight:700;'>Download Skedulo from the App Store</a>.";
-          }, 2500);
-        });
-
-        note.textContent =
-          "If nothing happens, tap ↗ to open in Safari, then tap the button again.";
-
-      } else {
-        // Desktop fallback
-        btn.href = "skedulox://agenda";
-        note.textContent = "On desktop, make sure Skedulo is installed and running.";
-      }
-    })();
+    function copyLink() {
+      navigator.clipboard.writeText(SKEDULO_SCHEME).then(function() {
+        var btn = document.getElementById('copyBtn');
+        btn.textContent = 'Copied!';
+        btn.classList.add('copied');
+        setTimeout(function() {
+          btn.textContent = 'Copy';
+          btn.classList.remove('copied');
+        }, 2000);
+      }).catch(function() {
+        // Fallback for older browsers
+        var el = document.createElement('textarea');
+        el.value = SKEDULO_SCHEME;
+        document.body.appendChild(el);
+        el.select();
+        document.execCommand('copy');
+        document.body.removeChild(el);
+        document.getElementById('copyBtn').textContent = 'Copied!';
+      });
+    }
   </script>
 </body>
 </html>
