@@ -1,0 +1,11 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "TEAM_ID.com.skedulo.app.v3",
+        "paths": [ "/agenda" ]
+      }
+    ]
+  }
+}
