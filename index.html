@@ -3,68 +3,29 @@
 <head>
   <title>Opening Skedulo...</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <script src="[statics.teams.cdn.live.net](https://statics.teams.cdn.live.net/sdk/v2.0.0/js/MicrosoftTeams.min.js)"></script>
 </head>
 <body style="margin:0;background:#ffc20e;display:flex;align-items:center;justify-content:center;min-height:100vh;font-family:sans-serif;">
-  <a id="deeplink" href="#"
+
+  <a id="deeplink" href="skedulox://agenda"
      style="background:#6b2a6b;color:#ffc20e;padding:20px 50px;border-radius:12px;font-size:20px;font-weight:bold;text-decoration:none;">
     Open Skedulo
   </a>
+
   <script>
-    // Initialize Teams SDK
-    microsoftTeams.app.initialize().then(() => {
-        const deeplinkElement = document.getElementById('deeplink');
+    var ua = navigator.userAgent;
+    var isTeams = /Teams/i.test(ua) || window.navigator.userAgent.indexOf('TeamsMobile') > -1;
 
-        // Function to attempt opening the Skedulo app
-        function openSkeduloApp() {
-            const skeduloDeepLink = "skedulox://agenda";
-            const skeduloAndroidIntent = "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end";
-            const skeduloWebFallback = "[app.skedulo.com](https://app.skedulo.com)";
-
-            // Check if running in Teams
-            if (microsoftTeams.app.getContext()) {
-                // Use Teams SDK to open the link
-                microsoftTeams.app.openLink(skeduloDeepLink).catch(error => {
-                    console.error("Teams app.openLink failed: ", error);
-                    // Fallback if Teams fails to open (e.g., app not installed)
-                    window.location.href = skeduloWebFallback;
-                });
-            } else {
-                // Not in Teams, use standard browser logic
-                var ua = navigator.userAgent;
-                if (/android/i.test(ua)) {
-                    window.location.href = skeduloAndroidIntent;
-                } else if (/iPad|iPhone|iPod/.test(ua)) {
-                    window.location.href = skeduloDeepLink;
-                } else {
-                    window.location.href = skeduloWebFallback;
-                }
-            }
-        }
-
-        deeplinkElement.addEventListener('click', function(event) {
-            event.preventDefault(); // Prevent default link behavior
-            openSkeduloApp();
-        });
-
-        // Optional: If you want to fire immediately on page load, uncomment next line
-        // openSkeduloApp();
-    }).catch(error => {
-        console.error("Teams SDK initialization failed: ", error);
-        // If Teams SDK fails to initialize, provide a basic fallback for non-Teams environments
-        const deeplinkElement = document.getElementById('deeplink');
-        deeplinkElement.addEventListener('click', function(event) {
-            event.preventDefault();
-            var ua = navigator.userAgent;
-            if (/android/i.test(ua)) {
-                window.location.href = "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end";
-            } else if (/iPad|iPhone|iPod/.test(ua)) {
-                window.location.href = "skedulox://agenda";
-            } else {
-                window.location.href = "[app.skedulo.com](https://app.skedulo.com)";
-            }
-        });
-    });
+    if (isTeams) {
+      // Inside Teams - fire deep link directly, Teams will prompt to open external app
+      window.location.href = "skedulox://agenda";
+    } else if (/android/i.test(ua)) {
+      window.location.href = "intent://agenda#Intent;scheme=skedulox;package=com.skedulo.app.v3;end";
+    } else if (/iPad|iPhone|iPod/.test(ua)) {
+      window.location.href = "skedulox://agenda";
+    } else {
+      window.location.href = "https://app.skedulo.com";
+    }
   </script>
+
 </body>
 </html>
